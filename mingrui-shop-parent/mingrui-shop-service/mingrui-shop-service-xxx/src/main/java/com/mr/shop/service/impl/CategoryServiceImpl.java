@@ -8,6 +8,7 @@ import com.mr.shop.mapper.CategoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ import java.util.List;
 @RestController
 public class CategoryServiceImpl extends BaseApiService implements CategoryService {
 
-    @Autowired
+    @Resource
     private CategoryMapper categoryMapper;
 
     @Override
