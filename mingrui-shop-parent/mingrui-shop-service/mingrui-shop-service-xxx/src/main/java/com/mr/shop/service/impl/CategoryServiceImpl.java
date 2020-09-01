@@ -4,12 +4,12 @@ import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
 import com.baidu.shop.entity.CategoryEntity;
 import com.baidu.shop.service.CategoryService;
+import com.baidu.shop.utils.ObjectUtil;
 import com.google.gson.JsonObject;
 import com.mr.shop.mapper.CategoryMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
-
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -28,12 +28,10 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
 
     @Override
     public Result<List<CategoryEntity>> getCategoryByPid(Integer pid) {
+
         CategoryEntity categoryEntity = new CategoryEntity();
-
         categoryEntity.setParentId(pid);
-
         List<CategoryEntity> list = categoryMapper.select(categoryEntity);
-
         return this.setResultSuccess(list);
     }
 
@@ -45,6 +43,7 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         categoryEntity.setId(entity.getParentId());
         categoryEntity.setIsParent(1);
         categoryMapper.updateByPrimaryKeySelective(categoryEntity);
+
 
         categoryMapper.insertSelective(entity);
 
@@ -60,11 +59,12 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         return this.setResultSuccess();
     }
 
+    @Transactional
     @Override
     public Result<JsonObject> delete(Integer id) {
 
         CategoryEntity categoryEntity = categoryMapper.selectByPrimaryKey(id);
-        if (null == categoryEntity) {
+        if (ObjectUtil.isNull(id)) {
             return this.setResultError("当前id不存在");
         }
 
@@ -76,7 +76,7 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         example.createCriteria().andEqualTo("parentId",categoryEntity.getParentId());
         List<CategoryEntity> list = categoryMapper.selectByExample(example);
 
-        if (list.size() == 1) {
+        if (!list.isEmpty() && list.size() == 1) {
             CategoryEntity entity = new CategoryEntity();
             entity.setId(categoryEntity.getParentId());
             entity.setIsParent(0);
