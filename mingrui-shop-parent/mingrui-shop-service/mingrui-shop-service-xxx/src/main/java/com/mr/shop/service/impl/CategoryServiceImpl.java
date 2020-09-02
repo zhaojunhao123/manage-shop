@@ -64,13 +64,10 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
     public Result<JsonObject> delete(Integer id) {
 
         CategoryEntity categoryEntity = categoryMapper.selectByPrimaryKey(id);
-        if (ObjectUtil.isNull(id)) {
-            return this.setResultError("当前id不存在");
-        }
 
-        if (categoryEntity.getIsParent() == 1) {
-            return this.setResultError("父节点不能被删除");
-        }
+        if (ObjectUtil.isNull(id)) return this.setResultError("当前id不存在");
+
+        if (categoryEntity.getIsParent() == 1) return this.setResultError("父节点不能被删除");
 
         Example example = new Example(CategoryEntity.class);
         example.createCriteria().andEqualTo("parentId",categoryEntity.getParentId());
@@ -86,6 +83,14 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         categoryMapper.deleteByPrimaryKey(id);
 
         return this.setResultSuccess();
+    }
+
+    @Override
+    public Result<List<CategoryEntity>> getByBrand(Integer brandId) {
+
+        List<CategoryEntity> byBrandId = categoryMapper.getByBrandId(brandId);
+
+        return this.setResultSuccess(byBrandId);
     }
 
 

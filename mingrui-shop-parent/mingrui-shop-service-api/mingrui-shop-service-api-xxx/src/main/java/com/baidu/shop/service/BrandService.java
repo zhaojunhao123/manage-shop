@@ -8,9 +8,7 @@ import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @ClassName BrandService
@@ -27,6 +25,14 @@ public interface BrandService{
     Result<PageInfo<BrandEntity>> list(BrandDTO brandDTO);
 
     @PostMapping(value = "brand/save")
-    @ApiOperation(value = "查询品牌信息")
+    @ApiOperation(value = "新增品牌信息")
     Result<JsonObject> saveBrand(@Validated({MingruiOperation.Add.class}) @RequestBody BrandDTO brandDTO);
+
+    @PutMapping(value = "brand/save")
+    @ApiOperation(value = "修改品牌信息")
+    Result<JsonObject> editBrand(@Validated({MingruiOperation.Add.class}) @RequestBody BrandDTO brandDTO);
+
+    @DeleteMapping(value = "brand/delete")
+    @ApiOperation(value = "通过id删除品牌信息")
+    Result<JsonObject> deleteBrand(Integer id);
 }

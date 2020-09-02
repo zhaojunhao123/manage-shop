@@ -19,4 +19,11 @@ public class StringUtil {
 
         return null == str || "".equals(str);
     }
+
+    //将string类型的数据转换成Integer类型
+    public static Integer toInteger(String str){
+
+        if(isNotEmpty(str)) return Integer.parseInt(str);
+        return 0;
+    }
 }

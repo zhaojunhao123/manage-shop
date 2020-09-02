@@ -8,7 +8,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @Api(tags = "商品分类接口")
@@ -29,5 +28,9 @@ public interface CategoryService {
     @ApiOperation(value = "分类删除")
     @DeleteMapping(value = "category/delete")
     Result<JsonObject> delete(Integer id);
+
+    @ApiOperation(value = "通过品牌id查询分类")
+    @GetMapping(value = "category/getByBrand")
+    public Result<List<CategoryEntity>> getByBrand(Integer brandId);
 
 }
