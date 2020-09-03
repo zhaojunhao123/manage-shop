@@ -131,6 +131,8 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     @Override
     public Result<JsonObject> deleteBrand(Integer id) {
 
+
+
         brandMapper.deleteByPrimaryKey(id);
 
         this.deleteCategoryAndBrand(id);
