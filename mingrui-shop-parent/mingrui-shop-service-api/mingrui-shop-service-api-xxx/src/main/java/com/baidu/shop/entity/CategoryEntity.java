@@ -22,7 +22,7 @@ public class CategoryEntity {
 
     @Id
     @ApiModelProperty(value = "类目主键",example = "1")
-    @NotNull(message = "Id不能为空", groups = {MingruiOperation.Add.class,MingruiOperation.Update.class})
+    @NotNull(message = "Id不能为空", groups = {MingruiOperation.Update.class})
     private Integer id;
 
     @ApiModelProperty(value = "类目名称")

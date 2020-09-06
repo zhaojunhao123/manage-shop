@@ -2,11 +2,15 @@ package com.mr.shop.service.impl;
 
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
+import com.baidu.shop.entity.CategoryBrandEntity;
 import com.baidu.shop.entity.CategoryEntity;
+import com.baidu.shop.entity.SpecGroupEntity;
 import com.baidu.shop.service.CategoryService;
 import com.baidu.shop.utils.ObjectUtil;
 import com.google.gson.JsonObject;
+import com.mr.shop.mapper.CategoryBrandMapper;
 import com.mr.shop.mapper.CategoryMapper;
+import com.mr.shop.mapper.SpecGroupMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
@@ -25,6 +29,12 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
 
     @Resource
     private CategoryMapper categoryMapper;
+
+    @Resource
+    private SpecGroupMapper specGroupMapper;
+
+    @Resource
+    private CategoryBrandMapper categoryBrandMapper;
 
     @Override
     public Result<List<CategoryEntity>> getCategoryByPid(Integer pid) {
@@ -80,6 +90,20 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
             categoryMapper.updateByPrimaryKeySelective(entity);
         }
 
+
+        Example example2 = new Example(CategoryBrandEntity.class);
+        example2.createCriteria().andEqualTo("categoryId", id);
+        List<CategoryBrandEntity> list2 = categoryBrandMapper.selectByExample(example2);
+
+        if(list2.size() != 0 ) return this.setResultError("此分类已被品牌绑定不能删除");
+
+
+        Example example1 = new Example(SpecGroupEntity.class);
+        example1.createCriteria().andEqualTo("cid", id);
+        List<SpecGroupEntity> list1 = specGroupMapper.selectByExample(example1);
+
+        if(list1.size() > 0) return this.setResultError("此分类下有规格不能被删除");
+
         categoryMapper.deleteByPrimaryKey(id);
 
         return this.setResultSuccess();
@@ -92,6 +116,5 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
 
         return this.setResultSuccess(byBrandId);
     }
-
 
 }
