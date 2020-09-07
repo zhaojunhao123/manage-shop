@@ -83,13 +83,6 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         example.createCriteria().andEqualTo("parentId",categoryEntity.getParentId());
         List<CategoryEntity> list = categoryMapper.selectByExample(example);
 
-        if (!list.isEmpty() && list.size() == 1) {
-            CategoryEntity entity = new CategoryEntity();
-            entity.setId(categoryEntity.getParentId());
-            entity.setIsParent(0);
-            categoryMapper.updateByPrimaryKeySelective(entity);
-        }
-
 
         Example example2 = new Example(CategoryBrandEntity.class);
         example2.createCriteria().andEqualTo("categoryId", id);
@@ -103,6 +96,14 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         List<SpecGroupEntity> list1 = specGroupMapper.selectByExample(example1);
 
         if(list1.size() > 0) return this.setResultError("此分类下有规格不能被删除");
+
+
+        if (!list.isEmpty() && list.size() == 1) {
+            CategoryEntity entity = new CategoryEntity();
+            entity.setId(categoryEntity.getParentId());
+            entity.setIsParent(0);
+            categoryMapper.updateByPrimaryKeySelective(entity);
+        }
 
         categoryMapper.deleteByPrimaryKey(id);
 
