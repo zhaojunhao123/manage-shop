@@ -7,6 +7,7 @@ import com.baidu.shop.entity.BrandEntity;
 import com.baidu.shop.entity.CategoryBrandEntity;
 import com.baidu.shop.service.BrandService;
 import com.baidu.shop.utils.BeanUtil;
+import com.baidu.shop.utils.ObjectUtil;
 import com.baidu.shop.utils.PinyinUtil;
 import com.baidu.shop.utils.StringUtil;
 import com.github.pagehelper.PageHelper;
@@ -72,11 +73,15 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     @Override
     public Result<PageInfo<BrandEntity>> list(BrandDTO brandDTO) {
 
-        PageHelper.startPage(brandDTO.getPage(),brandDTO.getRows());
+        if(ObjectUtil.isNotNull(brandDTO.getPage()) && ObjectUtil.isNotNull(brandDTO.getRows()))
+            PageHelper.startPage(brandDTO.getPage(),brandDTO.getRows());
 
         Example example = new Example(BrandEntity.class);
 
         if(StringUtil.isNotEmpty(brandDTO.getSort())) example.setOrderByClause(brandDTO.getOrderByClause());
+
+        Example.Criteria criteria = example.createCriteria();
+        if(ObjectUtil.isNotNull(brandDTO.getId())) criteria.andEqualTo("id",brandDTO.getId());
 
         if (StringUtil.isNotEmpty(brandDTO.getName())) example.createCriteria()
                 .andLike("name","%" + brandDTO.getName() + "%");
