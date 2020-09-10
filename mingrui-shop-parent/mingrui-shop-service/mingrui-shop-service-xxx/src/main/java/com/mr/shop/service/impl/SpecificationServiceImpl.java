@@ -15,7 +15,6 @@ import com.mr.shop.mapper.SpecParamMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
-
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -79,10 +78,14 @@ public class SpecificationServiceImpl extends BaseApiService implements Specific
     @Override
     public Result<List<SpecParamEntity>> listParam(SpecParamDTO specParamDTO) {
 
-        if(ObjectUtil.isNull(specParamDTO.getGroupId())) return this.setResultError("id不能为空");
-
+        //if(ObjectUtil.isNull(specParamDTO.getGroupId())) return this.setResultError("id不能为空");
         Example example = new Example(SpecParamEntity.class);
-        example.createCriteria().andEqualTo("groupId", specParamDTO.getGroupId());
+        Example.Criteria criteria = example.createCriteria();
+
+        if(ObjectUtil.isNotNull(specParamDTO.getGroupId())) criteria.andEqualTo("groupId", specParamDTO.getGroupId());
+
+        if(ObjectUtil.isNotNull(specParamDTO.getCid())) criteria.andEqualTo("cid", specParamDTO.getCid());
+
         List<SpecParamEntity> list = specParamMapper.selectByExample(example);
 
         return this.setResultSuccess(list);
