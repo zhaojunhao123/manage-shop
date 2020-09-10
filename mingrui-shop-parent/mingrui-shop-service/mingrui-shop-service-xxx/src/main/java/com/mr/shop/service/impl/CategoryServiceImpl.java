@@ -5,12 +5,14 @@ import com.baidu.shop.base.Result;
 import com.baidu.shop.entity.CategoryBrandEntity;
 import com.baidu.shop.entity.CategoryEntity;
 import com.baidu.shop.entity.SpecGroupEntity;
+import com.baidu.shop.entity.SpuEntity;
 import com.baidu.shop.service.CategoryService;
 import com.baidu.shop.utils.ObjectUtil;
 import com.google.gson.JsonObject;
 import com.mr.shop.mapper.CategoryBrandMapper;
 import com.mr.shop.mapper.CategoryMapper;
 import com.mr.shop.mapper.SpecGroupMapper;
+import com.mr.shop.mapper.SpuMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
@@ -35,6 +37,9 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
 
     @Resource
     private CategoryBrandMapper categoryBrandMapper;
+
+    @Resource
+    private SpuMapper spuMapper;
 
     @Override
     public Result<List<CategoryEntity>> getCategoryByPid(Integer pid) {
@@ -82,6 +87,13 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         Example example = new Example(CategoryEntity.class);
         example.createCriteria().andEqualTo("parentId",categoryEntity.getParentId());
         List<CategoryEntity> list = categoryMapper.selectByExample(example);
+
+
+        Example example3 = new Example(SpuEntity.class);
+        example3.createCriteria().andEqualTo("cid3",id);
+        List<SpuEntity> spuEntities = spuMapper.selectByExample(example3);
+
+        if(spuEntities.size() > 0) return this.setResultError("此分类下有商品不能被删除");
 
 
         Example example2 = new Example(CategoryBrandEntity.class);

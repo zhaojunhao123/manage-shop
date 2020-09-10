@@ -47,4 +47,8 @@ public interface GoodsService {
     @ApiOperation(value = "删除商品")
     @DeleteMapping(value = "goods/delete")
     Result<JSONObject> delete(Integer spuId);
+
+    @ApiOperation(value = "修改商品")
+    @PutMapping(value = "goods/editSal")
+    Result<JSONObject> editSal(@RequestBody SpuDTO spuDTO);
 }

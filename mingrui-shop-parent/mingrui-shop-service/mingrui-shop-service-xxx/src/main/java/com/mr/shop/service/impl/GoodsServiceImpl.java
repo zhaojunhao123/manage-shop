@@ -223,5 +223,20 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         }
 
     }
+
+    @Override
+    public Result<JSONObject> editSal(SpuDTO spuDTO) {
+        SpuEntity spuEntity = BeanUtil.copyProperties(spuDTO, SpuEntity.class);
+        spuEntity.setId(spuDTO.getId());
+        if(spuEntity.getSaleable() == 1){
+            spuEntity.setSaleable(0);
+            spuMapper.updateByPrimaryKeySelective(spuEntity);
+            return this.setResultSuccess("下架成功");
+        }else {
+            spuEntity.setSaleable(1);
+            spuMapper.updateByPrimaryKeySelective(spuEntity);
+            return this.setResultSuccess("上架成功");
+        }
+    }
 }
 
