@@ -69,7 +69,7 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         return this.setResultSuccess(list);
     }
 
-    private void addSpuAndStocks(List<SkuDTO> skus,Integer spuId,Date date){
+    private void addSpuAndStocks(List<SkuDTO> skus, Integer spuId, Date date) {
         //新增sku和stock数据
         skus.stream().forEach(skuDTO -> {
             //新增sku数据
@@ -88,21 +88,21 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     }
 
     @Override
-    public Result<Map<String,Object>> list(SpuDTO spuDTO) {
+    public Result<Map<String, Object>> list(SpuDTO spuDTO) {
 
         //分页
-        if(ObjectUtil.isNotNull(spuDTO.getPage()) && ObjectUtil.isNotNull(spuDTO.getRows()))
-            PageHelper.startPage(spuDTO.getPage(),spuDTO.getRows());
+        if (ObjectUtil.isNotNull(spuDTO.getPage()) && ObjectUtil.isNotNull(spuDTO.getRows()))
+            PageHelper.startPage(spuDTO.getPage(), spuDTO.getRows());
 
         Example example = new Example(SpuEntity.class);
 
         Example.Criteria criteria = example.createCriteria();
-        if(StringUtil.isNotEmpty(spuDTO.getTitle()))
-            criteria.andLike("title","%" + spuDTO.getTitle() + "%");
-        if(ObjectUtil.isNotNull(spuDTO.getSaleable()) && spuDTO.getSaleable() != 2)
-            criteria.andEqualTo("saleable",spuDTO.getSaleable());
+        if (StringUtil.isNotEmpty(spuDTO.getTitle()))
+            criteria.andLike("title", "%" + spuDTO.getTitle() + "%");
+        if (ObjectUtil.isNotNull(spuDTO.getSaleable()) && spuDTO.getSaleable() != 2)
+            criteria.andEqualTo("saleable", spuDTO.getSaleable());
 
-        if(ObjectUtil.isNotNull(spuDTO.getSort()))
+        if (ObjectUtil.isNotNull(spuDTO.getSort()))
             example.setOrderByClause(spuDTO.getOrderByClause());
 
         List<SpuEntity> list = spuMapper.selectByExample(example);
@@ -139,7 +139,7 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
         PageInfo<SpuEntity> info = new PageInfo<>(list);
 
-        return this.setResult(HTTPStatus.OK,info.getTotal() + "",spuDTOList);
+        return this.setResult(HTTPStatus.OK, info.getTotal() + "", spuDTOList);
     }
 
     @Transactional
@@ -163,20 +163,8 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         spuDetailEntity.setSpuId(spuId);
         spuDetailMapper.insertSelective(spuDetailEntity);
 
-        spuDTO.getSkus().stream().forEach(skuDTO -> {
-            //新增sku数据
-            SkuEntity skuEntity = BeanUtil.copyProperties(skuDTO, SkuEntity.class);
-            skuEntity.setSpuId(spuId);
-            skuEntity.setCreateTime(date);
-            skuEntity.setLastUpdateTime(date);
-            skuMapper.insertSelective(skuEntity);
-
-            //新增stock
-            StockEntity stockEntity = new StockEntity();
-            stockEntity.setSkuId(skuEntity.getId());
-            stockEntity.setStock(skuDTO.getStock());
-            stockMapper.insertSelective(stockEntity);
-        });
+        //新增sku和stock数据
+        this.addSpuAndStocks(spuDTO.getSkus(),spuId,date);
 
         return this.setResultSuccess();
     }
@@ -196,50 +184,37 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         SpuDetailEntity spuDetailEntity = BeanUtil.copyProperties(spuDTO.getSpuDetail(), SpuDetailEntity.class);
         spuDetailMapper.updateByPrimaryKeySelective(spuDetailEntity);
 
-        Example example = new Example(SkuEntity.class);
-        example.createCriteria().andEqualTo("spuId", spuDTO.getId());
-
         //通过spuId查询出来将要被删除的sku数据
-        List<SkuEntity> skuEntities = skuMapper.selectByExample(example);
-        List<Long> skuList = skuEntities.stream().map(sku -> sku.getId()).collect(Collectors.toList());
-
-        //通过spuId集合删除sku数据
-        skuMapper.deleteByIdList(skuList);
-
-        //通过spuId集合删除stock数据
-        stockMapper.deleteByIdList(skuList);
+        this.getSkuIdArrBySpuId(spuDTO.getId());
 
         //新增sku和stock数据
         this.addSpuAndStocks(spuDTO.getSkus(), spuEntity.getId(), date);
-
-//        spuDTO.getSkus().stream().forEach(skuDTO -> {
-//            //新增sku数据
-//            SkuEntity skuEntity = BeanUtil.copyProperties(skuDTO, SkuEntity.class);
-//            skuEntity.setSpuId(spuEntity.getId());
-//            skuEntity.setCreateTime(date);
-//            skuEntity.setLastUpdateTime(date);
-//            skuMapper.insertSelective(skuEntity);
-//
-//            //新增stock
-//            StockEntity stockEntity = new StockEntity();
-//            stockEntity.setSkuId(skuEntity.getId());
-//            stockEntity.setStock(skuDTO.getStock());
-//            stockMapper.insertSelective(stockEntity);
-//        });
 
         return this.setResultSuccess();
     }
 
     @Override
-    public Result<JSONObject> delete(Integer id) {
+    public Result<JSONObject> delete(Integer spuId) {
         //删除spu
-        spuMapper.deleteByPrimaryKey(id);
+        spuMapper.deleteByPrimaryKey(spuId);
 
         //删除spuDetail
-        spuDetailMapper.deleteByPrimaryKey(id);
+        spuDetailMapper.deleteByPrimaryKey(spuId);
 
-        List<Long> list = this.getSkuIdArrBySpuId(id);
-        if(list.size() > 0){
+        this.getSkuIdArrBySpuId(spuId);
+
+        return this.setResultSuccess();
+    }
+
+    private void getSkuIdArrBySpuId(Integer spuId) {
+        Example example = new Example(SkuEntity.class);
+        example.createCriteria().andEqualTo("spuId", spuId);
+
+        //通过spuId查询出来将要被删除的sku数据
+        List<Long> list = skuMapper.selectByExample(example).stream()
+                .map(sku -> sku.getId()).collect(Collectors.toList());
+
+        if (list.size() > 0) {
             //删除skus
             skuMapper.deleteByIdList(list);
 
@@ -247,13 +222,6 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
             stockMapper.deleteByIdList(list);
         }
 
-        return this.setResultSuccess();
-    }
-
-    private List<Long> getSkuIdArrBySpuId(Integer spuId){
-        Example example = new Example(SkuEntity.class);
-        example.createCriteria().andEqualTo("spuId",spuId);
-        List<SkuEntity> skuEntities = skuMapper.selectByExample(example);
-        return skuEntities.stream().map(sku -> sku.getId()).collect(Collectors.toList());
     }
 }
+
