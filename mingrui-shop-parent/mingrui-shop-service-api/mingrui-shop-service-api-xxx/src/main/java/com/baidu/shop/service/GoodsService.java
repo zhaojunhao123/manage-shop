@@ -9,6 +9,7 @@ import com.baidu.shop.entity.SpuEntity;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public interface GoodsService {
 
     @ApiOperation(value = "获取spu信息")
     @GetMapping(value = "goods/list")
-    Result<Map<String,Object>> list(SpuDTO spuDTO);
+    Result<List<SpuDTO>> list(@SpringQueryMap SpuDTO spuDTO);
 
     @ApiOperation(value = "新增商品")
     @PostMapping(value = "goods/save")
@@ -34,11 +35,11 @@ public interface GoodsService {
 
     @ApiOperation(value = "通过spuId获取spu-detail信息")
     @GetMapping(value = "goods/getDetailBySpuId")
-    Result<SpuDetailEntity> getDetailBySpuId(Integer spuId);
+    Result<SpuDetailEntity> getDetailBySpuId(@RequestParam Integer spuId);
 
     @ApiOperation(value = "获取sku信息")
     @GetMapping(value = "goods/getSkuBySpuId")
-    Result<List<SkuDTO>> getSkuBySpuId(Integer spuId);
+    Result<List<SkuDTO>> getSkuBySpuId(@RequestParam Integer spuId);
 
     @ApiOperation(value = "修改商品")
     @PutMapping(value = "goods/save")
@@ -51,4 +52,5 @@ public interface GoodsService {
     @ApiOperation(value = "修改商品")
     @PutMapping(value = "goods/editSal")
     Result<JSONObject> editSal(@RequestBody SpuDTO spuDTO);
+
 }

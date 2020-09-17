@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <!-- th:指令依赖于h5-->
+    你好,<span th:text="${stu.code}"></span><br>
+    <!--  data-th-text 指令支持非 h5-->
+    密码是:<span data-th-text="${stu.pass}"></span><br>
+    <!--对象['属性值'] 如果变量是动态的，可以用此属性-->
+    您的年龄是:<span th:text="${stu['age']}"></span><br>
+    <!--对象的value中有html需要渲染的使用 utext 输出-->
+    您最喜欢的是:<span th:utext="${stu.likeColor}"></span><br/>
+===================================================================================================
+    <div th:object="${stu}">
+        你好,<span th:text="*{code}"></span><br>
+        密码是:<span th:text="*{pass}"></span><br>
+        您的年龄是:<span th:text="*{age}"></span><br>
+        您最喜欢的是:<span th:utext="*{likeColor}"></span><br>
+
+        <span th:text="${stu.code.substring(1)}"></span><br>
+        <span th:text="${stu.code.split('')[2]}"></span><br>
+    </div>
+
+========================================================================================<br/>
+    <span th:text="'666'"></span><br/>
+    数字 :<span th:text="1024*2"></span><br/>
+    <span th:if="${stu.age} >=18">
+        成年
+    </span><br/>
+
+    <span th:text="'你好' + ${stu.code} + '真的6666'"></span><br/>
+    <span th:text="|你好${stu.code}真的6666|"></span><br/>
+    <span th:text="${stu.age} *2"></span><br/>
+    <span th:text="${stu.age} >=18 ? '成年' : '不成年' "></span><br/>
+    <span th:text="${stu.code} ?: ''"></span>
+</body>
+</html>
