@@ -17,7 +17,7 @@ import java.util.Map;
  * @Date 2020/9/16
  * @Version V1.0
  **/
-@Document(indexName = "goods",shards = 1,replicas = 0)
+@Document(indexName = "mrgoods",shards = 1,replicas = 0)
 @Data
 public class GoodsDoc {
 
