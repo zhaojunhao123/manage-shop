@@ -3,6 +3,8 @@ package com.baidu.shop.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
+import com.baidu.shop.component.MrRabbitMQ;
+import com.baidu.shop.constant.MqMessageConstant;
 import com.baidu.shop.dto.BrandDTO;
 import com.baidu.shop.dto.SkuDTO;
 import com.baidu.shop.dto.SpuDTO;
@@ -55,6 +57,9 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     @Resource
     private StockMapper stockMapper;
 
+    @Resource
+    private MrRabbitMQ mrRabbitMQ;
+
     @Override
     public Result<SpuDetailEntity> getDetailBySpuId(Integer spuId) {
 
@@ -100,6 +105,10 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
             criteria.andLike("title", "%" + spuDTO.getTitle() + "%");
         if (ObjectUtil.isNotNull(spuDTO.getSaleable()) && spuDTO.getSaleable() != 2)
             criteria.andEqualTo("saleable", spuDTO.getSaleable());
+
+        if(ObjectUtil.isNotNull(spuDTO.getId())){
+            criteria.andEqualTo("id", spuDTO.getId());
+        }
 
         if (ObjectUtil.isNotNull(spuDTO.getSort()))
             example.setOrderByClause(spuDTO.getOrderByClause());
@@ -164,6 +173,9 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
         //新增sku和stock数据
         this.addSpuAndStocks(spuDTO.getSkus(),spuId,date);
+
+        //发送消息
+        mrRabbitMQ.send(spuEntity.getId() + "", MqMessageConstant.SPU_ROUT_KEY_SAVE);
 
         return this.setResultSuccess();
     }

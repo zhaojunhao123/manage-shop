@@ -27,7 +27,7 @@ public interface SpecificationService {
 
     @ApiOperation(value = "通过条件查询规格组")
     @GetMapping(value = "specgroup/list")
-    Result<List<SpecGroupEntity>> list(SpecGroupDTO specGroupDTO);
+    Result<List<SpecGroupEntity>> list(@SpringQueryMap SpecGroupDTO specGroupDTO);
 
     @ApiOperation(value = "新增规格组")
     @PostMapping(value = "specgroup/save")
