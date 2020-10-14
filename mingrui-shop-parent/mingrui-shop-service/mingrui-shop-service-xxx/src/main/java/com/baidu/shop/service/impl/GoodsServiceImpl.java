@@ -150,10 +150,19 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         return this.setResult(HTTPStatus.OK, info.getTotal() + "", spuDTOList);
     }
 
-    @Transactional
     @Override
     public Result<JSONObject> save(SpuDTO spuDTO) {
 
+        Integer spuId = saveInfo(spuDTO);
+
+        //发送消息
+        mrRabbitMQ.send(spuId + "", MqMessageConstant.SPU_ROUT_KEY_SAVE);
+
+        return this.setResultSuccess();
+    }
+
+    @Transactional
+    public Integer saveInfo(SpuDTO spuDTO){
         Date date = new Date();
 
         SpuEntity spuEntity = BeanUtil.copyProperties(spuDTO, SpuEntity.class);
@@ -173,16 +182,22 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
         //新增sku和stock数据
         this.addSpuAndStocks(spuDTO.getSkus(),spuId,date);
+        
+        return spuEntity.getId();
+    }
+
+    @Override
+    public Result<JSONObject> edit(SpuDTO spuDTO) {
+
+        this.editInfo(spuDTO);
 
         //发送消息
-        mrRabbitMQ.send(spuEntity.getId() + "", MqMessageConstant.SPU_ROUT_KEY_SAVE);
-
+        mrRabbitMQ.send(spuDTO.getId() + "", MqMessageConstant.SPU_ROUT_KEY_UPDATE);
         return this.setResultSuccess();
     }
 
     @Transactional
-    @Override
-    public Result<JSONObject> edit(SpuDTO spuDTO) {
+    public void editInfo(SpuDTO spuDTO){
         Date date = new Date();
 
         //修改spu信息
@@ -200,12 +215,20 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
         //新增sku和stock数据
         this.addSpuAndStocks(spuDTO.getSkus(), spuEntity.getId(), date);
-
-        return this.setResultSuccess();
     }
 
     @Override
     public Result<JSONObject> delete(Integer spuId) {
+
+        this.deleteInfo(spuId);
+
+        //发送消h息
+        mrRabbitMQ.send(spuId + "",MqMessageConstant.SPU_ROUT_KEY_DELETE);
+        return this.setResultSuccess();
+    }
+
+    @Transactional
+    public void deleteInfo(Integer spuId){
         //删除spu
         spuMapper.deleteByPrimaryKey(spuId);
 
@@ -213,8 +236,6 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         spuDetailMapper.deleteByPrimaryKey(spuId);
 
         this.getSkuIdArrBySpuId(spuId);
-
-        return this.setResultSuccess();
     }
 
     private void getSkuIdArrBySpuId(Integer spuId) {

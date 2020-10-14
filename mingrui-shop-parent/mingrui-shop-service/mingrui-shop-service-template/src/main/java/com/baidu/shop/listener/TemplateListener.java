@@ -1,7 +1,7 @@
 package com.baidu.shop.listener;
 
 import com.baidu.shop.constant.MqMessageConstant;
-import com.baidu.shop.service.ShopElasticsearchService;
+import com.baidu.shop.service.TemplateService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.ExchangeTypes;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * @ClassName GoodsListener
+ * @ClassName TemplateListener
  * @Description: TODO
  * @Author zhaojunhao
  * @Date 2020/10/12
@@ -24,14 +24,14 @@ import java.io.IOException;
  **/
 @Component
 @Slf4j
-public class GoodsListener {
+public class TemplateListener {
     @Autowired
-    private ShopElasticsearchService shopElasticsearchService;
+    private TemplateService templateService;
 
     @RabbitListener(
             bindings = @QueueBinding(
                     value = @Queue(
-                            value = MqMessageConstant.SPU_QUEUE_SEARCH_SAVE,
+                            value = MqMessageConstant.SPU_QUEUE_PAGE_SAVE,
                             durable = "true"
                     ),
                     exchange = @Exchange(
@@ -44,16 +44,16 @@ public class GoodsListener {
     )
     public void save(Message message, Channel channel) throws IOException {
 
-        log.info("es服务接受到需要保存数据的消息: " + new String(message.getBody()));
-        //新增数据到es
-        shopElasticsearchService.saveData(Integer.parseInt(new String(message.getBody())));
+        log.info("template服务接受到需要保存数据的消息: " + new String(message.getBody()));
+        //根据spuId生成页面
+        templateService.createStaticHTMLTemplate(Integer.valueOf(new String(message.getBody())));
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), true);
     }
 
     @RabbitListener(
             bindings = @QueueBinding(
                     value = @Queue(
-                            value = MqMessageConstant.SPU_QUEUE_SEARCH_DELETE,
+                            value = MqMessageConstant.SPU_QUEUE_PAGE_DELETE,
                             durable = "true"
                     ),
                     exchange = @Exchange(
@@ -66,9 +66,9 @@ public class GoodsListener {
     )
     public void delete(Message message, Channel channel) throws IOException {
 
-        log.info("es服务接受到需要删除数据的消息: " + new String(message.getBody()));
-        //新增数据到es
-        shopElasticsearchService.delData(Integer.parseInt(new String(message.getBody())));
+        log.info("template服务接受到需要删除数据的消息: " + new String(message.getBody()));
+        //根据spuid删除页面
+        templateService.delHTMLBySpuId(Integer.valueOf(new String(message.getBody())));
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), true);
     }
 }
